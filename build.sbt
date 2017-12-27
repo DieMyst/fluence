@@ -146,7 +146,7 @@ lazy val `storage` = project.in(file("storage"))
     )
   )
 
-lazy val `b-tree-client` = project.in(file("b-tree-client"))
+lazy val `b-tree-client` = project.in(file("b-tree/client"))
   .settings(commons)
   .settings(
     libraryDependencies ++= Seq(
@@ -154,9 +154,26 @@ lazy val `b-tree-client` = project.in(file("b-tree-client"))
       logback,
       scalatest
     )
-  ).dependsOn(`crypto`).aggregate(`crypto`)
+  ).dependsOn(`b-tree-common`, `b-tree-protocol`)
+   .aggregate(`b-tree-common`, `b-tree-protocol`)
 
-lazy val `b-tree-server` = project.in(file("b-tree-server"))
+lazy val `b-tree-common` = project.in(file("b-tree/common"))
+  .settings(commons)
+  .settings(
+    libraryDependencies ++= Seq(
+      monix3,
+      logback,
+      scalatest
+    )
+  ).dependsOn(`crypto`)
+   .aggregate(`crypto`)
+
+lazy val `b-tree-protocol` = project.in(file("b-tree/protocol"))
+  .settings(commons)
+  .dependsOn(`b-tree-common`)
+  .aggregate(`b-tree-common`)
+
+lazy val `b-tree-server` = project.in(file("b-tree/server"))
   .settings(commons)
   .settings(
     libraryDependencies ++= Seq(
@@ -166,7 +183,8 @@ lazy val `b-tree-server` = project.in(file("b-tree-server"))
       logback,
       scalatest
     )
-  ).dependsOn(`storage`, `b-tree-client`).aggregate(`storage`, `b-tree-client`)
+  ).dependsOn(`storage`, `b-tree-common`, `b-tree-protocol`, `b-tree-client` % "compile->test")
+   .aggregate(`storage`, `b-tree-common`, `b-tree-protocol`, `b-tree-client`)
 
 lazy val `crypto` = project.in(file("crypto"))
   .settings(commons)
